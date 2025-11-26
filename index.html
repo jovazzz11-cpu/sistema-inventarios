@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Head to toe - Dashboard</title>
+    <meta name="description" content="Sistema de gestión de inventarios moderno y responsive">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- SheetJS para exportar a Excel -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-container">
+            <div class="header-left">
+                <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="logo">
+                    <i class="fas fa-spa"></i>
+                    <h1>Head to toe</h1>
+                </div>
+            </div>
+            
+            <div class="header-right">
+                <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <div class="user-profile">
+                    <i class="fas fa-user-circle"></i>
+                    <span class="user-name">Admin</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <nav class="sidebar-nav">
+            <a href="#dashboard" class="nav-item active" data-section="dashboard">
+                <i class="fas fa-chart-line"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="#productos" class="nav-item" data-section="productos">
+                <i class="fas fa-box"></i>
+                <span>Productos</span>
+            </a>
+            <a href="#categorias" class="nav-item" data-section="categorias">
+                <i class="fas fa-tags"></i>
+                <span>Categorías</span>
+            </a>
+            <a href="#reportes" class="nav-item" data-section="reportes">
+                <i class="fas fa-file-alt"></i>
+                <span>Reportes</span>
+            </a>
+            <a href="#ajustes" class="nav-item" data-section="ajustes">
+                <i class="fas fa-cog"></i>
+                <span>Ajustes</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Overlay para móvil -->
+    <div class="overlay" id="overlay"></div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Dashboard Section -->
+        <section id="dashboard-section" class="content-section active">
+            <div class="section-header">
+                <h2>Dashboard</h2>
+                <p class="section-subtitle">Vista general del inventario</p>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                        <i class="fas fa-boxes"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="totalProductos">0</h3>
+                        <p>Total Productos</p>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="stockBajo">0</h3>
+                        <p>Stock Bajo</p>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="valorTotal">$0</h3>
+                        <p>Valor Total</p>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                        <i class="fas fa-layer-group"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="totalCategorias">0</h3>
+                        <p>Categorías</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Alertas de Stock Bajo -->
+            <div class="alerts-section" id="alertsSection">
+                <h3><i class="fas fa-bell"></i> Alertas de Stock</h3>
+                <div id="alertsList" class="alerts-list">
+                    <!-- Se llenarán dinámicamente -->
+                </div>
+            </div>
+
+            <!-- Categorías Overview -->
+            <div class="categories-overview">
+                <h3><i class="fas fa-chart-pie"></i> Distribución por Categoría</h3>
+                <div id="categoriesChart" class="categories-chart">
+                    <!-- Se llenará dinámicamente -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Productos Section -->
+        <section id="productos-section" class="content-section">
+            <div class="section-header">
+                <h2>Gestión de Productos</h2>
+                <button class="btn btn-primary" id="addProductBtn">
+                    <i class="fas fa-plus"></i> Agregar Producto
+                </button>
+            </div>
+
+            <!-- Barra de Búsqueda y Filtros -->
+            <div class="toolbar">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Buscar por nombre o SKU...">
+                </div>
+
+                <div class="filters">
+                    <select id="categoryFilter" class="filter-select">
+                        <option value="">Todas las categorías</option>
+                    </select>
+
+                    <select id="stockFilter" class="filter-select">
+                        <option value="">Todo el stock</option>
+                        <option value="bajo">Stock bajo</option>
+                        <option value="normal">Stock normal</option>
+                    </select>
+
+                    <select id="sortBy" class="filter-select">
+                        <option value="nombre">Ordenar por nombre</option>
+                        <option value="precio">Ordenar por precio</option>
+                        <option value="cantidad">Ordenar por cantidad</option>
+                    </select>
+                </div>
+
+                <div class="view-toggle">
+                    <button class="view-btn active" data-view="grid" title="Vista de tarjetas">
+                        <i class="fas fa-grip"></i>
+                    </button>
+                    <button class="view-btn" data-view="list" title="Vista de lista">
+                        <i class="fas fa-list"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Lista de Productos -->
+            <div id="productsContainer" class="products-grid">
+                <!-- Se llenarán dinámicamente -->
+            </div>
+
+            <!-- Empty State -->
+            <div id="emptyState" class="empty-state" style="display: none;">
+                <i class="fas fa-box-open"></i>
+                <h3>No hay productos</h3>
+                <p>Comienza agregando tu primer producto al inventario</p>
+                <button class="btn btn-primary" onclick="document.getElementById('addProductBtn').click()">
+                    <i class="fas fa-plus"></i> Agregar Producto
+                </button>
+            </div>
+        </section>
+
+        <!-- Otras secciones (placeholder) -->
+        <section id="categorias-section" class="content-section">
+            <div class="section-header">
+                <h2 id="categoriasTitle">Categorías</h2>
+                <button class="btn btn-secondary" id="backToCategoriesBtn" style="display: none;">
+                    <i class="fas fa-arrow-left"></i> Volver a Categorías
+                </button>
+            </div>
+            
+            <!-- Grid de Categorías -->
+            <div id="categoriesGrid" class="reports-grid">
+                <!-- Se llenarán dinámicamente -->
+            </div>
+
+            <!-- Contenedor de Productos de Categoría (oculto inicialmente) -->
+            <div id="categoryProductsContainer" style="display: none;">
+                <div class="products-grid" id="categoryProductsGrid">
+                    <!-- Se llenarán dinámicamente -->
+                </div>
+                <div id="categoryEmptyState" class="empty-state" style="display: none;">
+                    <i class="fas fa-box-open"></i>
+                    <h3>No hay productos en esta categoría</h3>
+                    <p>Agrega productos a esta categoría desde la sección de Productos</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="reportes-section" class="content-section">
+            <div class="section-header">
+                <h2>Reportes</h2>
+            </div>
+            
+            <div class="reports-grid">
+                <div class="report-card">
+                    <div class="report-icon" style="background: linear-gradient(135deg, #10b981, #059669);">
+                        <i class="fas fa-file-excel"></i>
+                    </div>
+                    <h3>Inventario Completo</h3>
+                    <p>Exporta todos los productos con detalles completos</p>
+                    <div class="report-actions">
+                        <button class="btn btn-success" id="exportExcelBtn">
+                            <i class="fas fa-file-excel"></i> Exportar a Excel
+                        </button>
+                        <button class="btn btn-secondary" id="exportCsvBtn">
+                            <i class="fas fa-file-csv"></i> Exportar a CSV
+                        </button>
+                    </div>
+                </div>
+
+                <div class="report-card">
+                    <div class="report-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <h3>Productos con Stock Bajo</h3>
+                    <p>Reporte de productos que necesitan reabastecimiento</p>
+                    <div class="report-actions">
+                        <button class="btn btn-success" id="exportLowStockExcelBtn">
+                            <i class="fas fa-file-excel"></i> Exportar a Excel
+                        </button>
+                        <button class="btn btn-secondary" id="exportLowStockCsvBtn">
+                            <i class="fas fa-file-csv"></i> Exportar a CSV
+                        </button>
+                    </div>
+                </div>
+
+                <div class="report-card">
+                    <div class="report-icon" style="background: linear-gradient(135deg, #3b82f6, #2563eb);">
+                        <i class="fas fa-chart-pie"></i>
+                    </div>
+                    <h3>Reporte por Categoría</h3>
+                    <p>Resumen de inventario organizado por categorías</p>
+                    <div class="report-actions">
+                        <button class="btn btn-success" id="exportCategoryExcelBtn">
+                            <i class="fas fa-file-excel"></i> Exportar a Excel
+                        </button>
+                        <button class="btn btn-secondary" id="exportCategoryCsvBtn">
+                            <i class="fas fa-file-csv"></i> Exportar a CSV
+                        </button>
+                    </div>
+                </div>
+
+                <div class="report-card">
+                    <div class="report-icon" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
+                    <h3>Valoración de Inventario</h3>
+                    <p>Reporte de valor total del inventario por producto</p>
+                    <div class="report-actions">
+                        <button class="btn btn-success" id="exportValueExcelBtn">
+                            <i class="fas fa-file-excel"></i> Exportar a Excel
+                        </button>
+                        <button class="btn btn-secondary" id="exportValueCsvBtn">
+                            <i class="fas fa-file-csv"></i> Exportar a CSV
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="ajustes-section" class="content-section">
+            <div class="section-header">
+                <h2>Ajustes</h2>
+            </div>
+            <div class="settings-grid">
+                <div class="setting-card">
+                    <h3><i class="fas fa-download"></i> Exportar Datos</h3>
+                    <p>Descarga todos tus productos en formato JSON</p>
+                    <button class="btn btn-secondary" id="exportBtn">
+                        <i class="fas fa-file-download"></i> Exportar
+                    </button>
+                </div>
+                <div class="setting-card">
+                    <h3><i class="fas fa-upload"></i> Importar Datos</h3>
+                    <p>Importa productos desde un archivo JSON</p>
+                    <button class="btn btn-secondary" id="importBtn">
+                        <i class="fas fa-file-upload"></i> Importar
+                    </button>
+                    <input type="file" id="importFile" accept=".json" style="display: none;">
+                </div>
+                <div class="setting-card">
+                    <h3><i class="fas fa-trash"></i> Limpiar Datos</h3>
+                    <p>Elimina todos los productos del sistema</p>
+                    <button class="btn btn-danger" id="clearDataBtn">
+                        <i class="fas fa-exclamation-triangle"></i> Limpiar Todo
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal para Agregar/Editar Producto -->
+    <div class="modal" id="productModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Agregar Producto</h2>
+                <button class="modal-close" id="closeModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <form id="productForm" class="modal-body">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="productName">Nombre del Producto *</label>
+                        <input type="text" id="productName" required placeholder="Ej: Laptop HP">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="productSKU">Código SKU *</label>
+                        <input type="text" id="productSKU" required placeholder="Ej: LAP-HP-001">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="productCategory">Categoría *</label>
+                        <input 
+                            type="text" 
+                            id="productCategory" 
+                            list="categoriesList" 
+                            required 
+                            placeholder="Selecciona o escribe una nueva categoría"
+                        >
+                        <datalist id="categoriesList">
+                            <option value="Coloración y Tintes">
+                            <option value="Cuidado Capilar">
+                            <option value="Tratamientos">
+                            <option value="Manicure y Pedicure">
+                            <option value="Maquillaje">
+                            <option value="Accesorios">
+                            <option value="Herramientas">
+                            <option value="Otros">
+                        </datalist>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="productPrice">Precio (MXN) *</label>
+                        <input type="number" id="productPrice" required min="0" step="0.01" placeholder="0.00">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="productQuantity">Cantidad *</label>
+                        <input type="number" id="productQuantity" required min="0" placeholder="0">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="productMinStock">Stock Mínimo *</label>
+                        <input type="number" id="productMinStock" required min="0" placeholder="5">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="productDescription">Descripción</label>
+                    <textarea id="productDescription" rows="3" placeholder="Descripción del producto..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="productImage">Imagen del producto (opcional)</label>
+                    <input type="text" id="productImage" placeholder="Ruta: images/producto.png" readonly>
+                    <small style="color: var(--color-text-tertiary); font-size: 0.75rem; display: block; margin-top: 0.5rem;">Ingresa la ruta o captura/carga una foto</small>
+                    
+                    <div class="image-upload-buttons">
+                        <button type="button" class="btn btn-secondary" id="takePictureBtn">
+                            <i class="fas fa-camera"></i> Tomar Foto
+                        </button>
+                        <button type="button" class="btn btn-secondary" id="uploadPictureBtn">
+                            <i class="fas fa-upload"></i> Cargar Foto
+                        </button>
+                        <button type="button" class="btn btn-danger" id="clearImageBtn" style="display:none;">
+                            <i class="fas fa-times"></i> Quitar Foto
+                        </button>
+                    </div>
+                    
+                    <!-- Preview de la imagen -->
+                    <div id="imagePreview" style="display:none; margin-top: 1rem;">
+                        <img id="previewImg" src="" alt="Preview" style="max-width: 100%; max-height: 200px; border-radius: 8px; border: 2px solid var(--color-border);">
+                    </div>
+                    
+                    <!-- Input file oculto para cámara -->
+                    <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none;">
+                    <!-- Input file oculto para galería -->
+                    <input type="file" id="fileInput" accept="image/*" style="display:none;">
+                </div>
+
+                <input type="hidden" id="productId">
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="cancelBtn">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Guardar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- JavaScript -->
+    <script src="script.js"></script>
+</body>
+</html>
